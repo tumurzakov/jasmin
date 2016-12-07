@@ -216,20 +216,21 @@ class Send(Resource):
             # Set DLR bit mask on the last pdu
             _last_pdu = routable.pdu
             while True:
+                # As of #489, setting DLR will request for receipt in all parts of a long message
+                if updated_request.args['dlr'][0] == 'yes':
+                    _last_pdu.params['registered_delivery'] = RegisteredDelivery(
+                        RegisteredDeliveryReceipt.SMSC_DELIVERY_RECEIPT_REQUESTED)
+                    self.log.debug(
+                        "SubmitSmPDU registered_delivery is set to %s",
+                        str(_last_pdu.params['registered_delivery']))
+
                 if hasattr(_last_pdu, 'nextPdu'):
                     _last_pdu = _last_pdu.nextPdu
                 else:
                     break
-            # DLR setting is clearly described in #107
-            _last_pdu.params['registered_delivery'] = RegisteredDelivery(
-                RegisteredDeliveryReceipt.NO_SMSC_DELIVERY_RECEIPT_REQUESTED)
-            if updated_request.args['dlr'][0] == 'yes':
-                _last_pdu.params['registered_delivery'] = RegisteredDelivery(
-                    RegisteredDeliveryReceipt.SMSC_DELIVERY_RECEIPT_REQUESTED)
-                self.log.debug(
-                    "SubmitSmPDU registered_delivery is set to %s",
-                    str(_last_pdu.params['registered_delivery']))
 
+            # DLR setting is clearly described in #107
+            if updated_request.args['dlr'][0] == 'yes':
                 dlr_level = int(updated_request.args['dlr-level'][0])
                 if 'dlr-url' in updated_request.args:
                     dlr_url = updated_request.args['dlr-url'][0]

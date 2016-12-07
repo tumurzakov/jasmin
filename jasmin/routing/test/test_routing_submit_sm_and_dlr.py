@@ -678,6 +678,55 @@ class HttpDlrCallbackingTestCases(RouterPBProxy, HappySMSCTestCase, SubmitSmTest
         self.assertEqual(callArgs_level2['id'][0], msgId)
 
     @defer.inlineCallbacks
+    def test_unordered_long_message_with_inurl_dlr(self):
+        """in #489: Jasmin will trigger a http dlr call once all parts of a long message are received, no matter
+        the order those parts are received in.
+        This will change the behaviour agreed in #483.
+        """
+        yield self.connect('127.0.0.1', self.pbPort)
+        yield self.prepareRoutingsAndStartConnector()
+
+        self.params['dlr-url'] = self.dlr_url
+        self.params['dlr-level'] = 3
+        self.params['dlr-method'] = 'GET'
+        self.params['content'] = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(400))
+        baseurl = 'http://127.0.0.1:1401/send?%s' % urllib.urlencode(self.params)
+
+        # Send a MT
+        # We should receive a msg id
+        c = yield getPage(baseurl, method=self.method, postdata=self.postdata)
+        msgStatus = c[:7]
+        msgId = c[9:45]
+
+        # Wait 1 seconds for 2 submit_sm_resps
+        yield waitFor(1)
+
+        # Trigger a deliver_sm
+        yield self.SMSCPort.factory.lastClient.trigger_DLR()
+
+        # Wait 1 seconds for deliver_sm
+        yield waitFor(1)
+
+        yield self.stopSmppClientConnectors()
+
+        # Run tests
+        # Ensure all parts are requesting DLR
+        self.assertEqual(3, len(self.SMSCPort.factory.lastClient.submitRecords))
+        for submit_record in self.SMSCPort.factory.lastClient.submitRecords:
+            self.assertEqual(str(submit_record.params['registered_delivery'].receipt),
+                             'SMSC_DELIVERY_RECEIPT_REQUESTED')
+
+        # Ensure dlr-url were called
+        self.assertEqual(msgStatus, 'Success')
+        # A DLR must be sent to dlr_url
+        self.assertEqual(self.AckServerResource.render_GET.call_count, 2)
+        # Message ID must be transmitted in the DLR
+        callArgs_level1 = self.AckServerResource.render_GET.call_args_list[0][0][0].args
+        callArgs_level2 = self.AckServerResource.render_GET.call_args_list[1][0][0].args
+        self.assertEqual(callArgs_level1['id'][0], msgId)
+        self.assertEqual(callArgs_level2['id'][0], msgId)
+
+    @defer.inlineCallbacks
     def test_quick_dlr(self):
         """Refs #472
         Will slow down the call to redis when saving the dlr map in submit_sm_resp callback and get the
