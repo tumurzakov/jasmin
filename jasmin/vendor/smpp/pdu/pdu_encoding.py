@@ -830,8 +830,8 @@ class OptionEncoder(IEncoder):
             T.sms_signal: OctetStringEncoder(self.getLength),
             T.alert_on_message_delivery: EmptyEncoder(),
             #T.its_reply_type: ItsReplyTypeEncoder(),
-            # T.its_session_info: ItsSessionInfoEncoder(),
-            # T.ussd_service_op: UssdServiceOpEncoder(),
+            T.its_session_info: Int2Encoder(),
+            T.ussd_service_op: Int1Encoder(),
             # Jasmin update: bypass vendor specific tags
             T.vendor_specific_bypass: OctetStringEncoder(self.getLength),
         }

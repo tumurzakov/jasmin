@@ -43,7 +43,7 @@ class PDU(Content):
 class DLR(Content):
     """A DLR is published to dlr.* routes for DLRLookup"""
 
-    def __init__(self, pdu_type, msgid, status, smpp_msgid=None, cid=None, dlr_details=None):
+    def __init__(self, pdu_type, msgid, status, smpp_msgid=None, cid=None, dlr_details=None, pdu_params=None):
         pdu_type_s = '%s' % pdu_type
         status_s = '%s' % status
 
@@ -65,6 +65,11 @@ class DLR(Content):
             for k, v in dlr_details.iteritems():
                 properties['headers']['dlr_%s' % k] = v
 
+        if pdu_params != None:
+            for k, v in pdu_params.iteritems():
+                if (isinstance(v, (int, basestring))):
+                    properties['headers']['pdu_%s' % k] = v
+
         Content.__init__(self, status_s, properties=properties)
 
 
@@ -73,7 +78,7 @@ class DLRContentForHttpapi(Content):
     receipt acknowledgment details"""
 
     def __init__(self, message_status, msgid, dlr_url, dlr_level, id_smsc='', sub='',
-                 dlvrd='', subdate='', donedate='', err='', text='', method='POST', trycount=0):
+                 dlvrd='', subdate='', donedate='', err='', text='', method='POST', trycount=0, dlr=None):
 
         # ESME_* statuses are returned from SubmitSmResp
         # Others are returned from DeliverSm, values must be the same as Table B-2
@@ -98,6 +103,11 @@ class DLRContentForHttpapi(Content):
                                                        'donedate': donedate,
                                                        'err': err,
                                                        'text': text}}
+
+        if dlr != None:
+            for k, v in dlr['headers'].iteritems():
+                if (isinstance(v, (int, basestring))):
+                    properties['headers']['dlr_%s' % k] = v
 
         Content.__init__(self, msgid, properties=properties)
 

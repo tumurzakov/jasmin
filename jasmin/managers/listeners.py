@@ -363,7 +363,7 @@ class SMPPClientSMListener(object):
             # Send DLR to DLRLookup
             if r.response.status == CommandStatus.ESME_ROK:
                 dlr = DLR(pdu_type=r.response.id, msgid=msgid, status=r.response.status,
-                          smpp_msgid=r.response.params['message_id'])
+                        smpp_msgid=r.response.params['message_id'])
             else:
                 dlr = DLR(pdu_type=r.response.id, msgid=msgid, status=r.response.status)
             yield self.amqpBroker.publish(exchange='messaging', routing_key='dlr.submit_sm_resp', content=dlr)
@@ -698,7 +698,9 @@ class SMPPClientSMListener(object):
                                                           msgid=self.code_dlr_msgid(routable.pdu),
                                                           status=routable.pdu.dlr['stat'],
                                                           cid=self.SMPPClientFactory.config.id,
-                                                          dlr_details=routable.pdu.dlr))
+                                                          dlr_details=routable.pdu.dlr,
+                                                          pdu_params=routable.pdu.params
+                                                          ))
         except (InterceptorRunError, DeliverSmInterceptionError) as e:
             self.log.info("SMS-MO [cid:%s] [i-status:%s] [from:%s] [to:%s] [content:%r]",
                           self.SMPPClientFactory.config.id,

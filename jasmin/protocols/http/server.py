@@ -204,6 +204,12 @@ class Send(Resource):
                 routable.pdu.params['priority_flag'] = priority_flag_value_map[priority]
             self.log.debug("SubmitSmPDU priority is set to %s", priority)
 
+            if 'ussd-session' in updated_request.args:
+                ussd_session = updated_request.args['ussd-session'][0]
+                routable.pdu.params['user_message_reference'] = int(ussd_session)
+                routable.pdu.params['ussd_service_op'] = 2
+                self.log.debug("SubmitSmPDU ussd_session is set to %s", ussd_session)
+
             # Set validity_period
             if 'validity-period' in updated_request.args:
                 delta = timedelta(minutes=int(updated_request.args['validity-period'][0]))
@@ -383,6 +389,7 @@ class Send(Resource):
                       # Validity period validation pattern can be validated/filtered further more
                       # through HttpAPICredentialValidator
                       'validity-period' : {'optional': True, 'pattern': re.compile(r'^\d+$')},
+                      'ussd-session' : {'optional': True, 'pattern': re.compile(r'^\d+$')},
                       'dlr'         : {'optional': False, 'pattern': re.compile(r'^(yes|no)$')},
                       'dlr-url'     : {'optional': True, 'pattern': re.compile(r'^(http|https)\://.*$')},
                       # DLR Level validation pattern can be validated/filtered further more
@@ -610,6 +617,7 @@ class Rate(Resource):
                       # Validity period validation pattern can be validated/filtered further more
                       # through HttpAPICredentialValidator
                       'validity-period' :{'optional': True, 'pattern': re.compile(r'^\d+$')},
+                      'ussd-session' :{'optional': True, 'pattern': re.compile(r'^\d+$')},
                       'tags'        : {'optional': True, 'pattern': re.compile(r'^([-a-zA-Z0-9,])*$')},
                       'content'     : {'optional': True},
                       }

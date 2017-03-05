@@ -192,7 +192,8 @@ class DLRLookup(object):
                                                   routing_key='dlr_thrower.http',
                                                   content=DLRContentForHttpapi(dlr_status,
                                                                                msgid, dlr_url,
-                                                                               dlr_level=1, method=dlr_method))
+                                                                               dlr_level=1, method=dlr_method,
+                                                                               dlr=message.content.properties ))
 
                     # DLR request is removed if:
                     # - If level 1 is requested (SMSC level only)
@@ -294,6 +295,8 @@ class DLRLookup(object):
         pdu_dlr_dlvrd = message.content.properties['headers']['dlr_dlvrd']
         pdu_dlr_status = message.content.body
 
+        self.log.info(message.content.properties);
+
         try:
             if self.redisClient is None:
                 raise RedisError('RC undefined !')
@@ -339,7 +342,9 @@ class DLRLookup(object):
                                                                                donedate=pdu_dlr_ddate,
                                                                                err=pdu_dlr_err,
                                                                                text=pdu_dlr_text,
-                                                                               method=dlr_method))
+                                                                               method=dlr_method,
+                                                                               dlr=message.content.properties
+                                                                               ))
 
                     self.log.debug('Removing HTTP dlr map for msgid[%s]', submit_sm_queue_id)
                     yield self.redisClient.delete('dlr:%s' % submit_sm_queue_id)

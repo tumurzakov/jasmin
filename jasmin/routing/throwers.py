@@ -275,6 +275,15 @@ class deliverSmThrower(Thrower):
         if ('validity_period' in RoutedDeliverSmContent.params and
                     RoutedDeliverSmContent.params['validity_period'] is not None):
             args['validity'] = RoutedDeliverSmContent.params['validity_period']
+        if ('ussd_service_op' in RoutedDeliverSmContent.params and
+                    RoutedDeliverSmContent.params['ussd_service_op'] is not None):
+            args['ussd_service_op'] = RoutedDeliverSmContent.params['ussd_service_op']
+        if ('its_session_info' in RoutedDeliverSmContent.params and
+                    RoutedDeliverSmContent.params['its_session_info'] is not None):
+            args['its_session_info'] = RoutedDeliverSmContent.params['its_session_info']
+        if ('user_message_reference' in RoutedDeliverSmContent.params and
+                    RoutedDeliverSmContent.params['user_message_reference'] is not None):
+            args['user_message_reference'] = RoutedDeliverSmContent.params['user_message_reference']
 
         counter = 0
         for dc in dcs:
@@ -499,6 +508,7 @@ class DLRThrower(Thrower):
         method = message.content.properties['headers']['method']
         level = message.content.properties['headers']['level']
         self.log.debug('Got one message (msgid:%s) to throw', msgid)
+        self.log.info(message.content.properties)
 
         # If any, clear requeuing timer
         self.clearRequeueTimer(msgid)
@@ -516,6 +526,14 @@ class DLRThrower(Thrower):
             args['donedate'] = message.content.properties['headers']['donedate']
             args['err'] = message.content.properties['headers']['err']
             args['text'] = message.content.properties['headers']['text']
+
+        pdu_params = message.content.properties['headers']
+        if ('dlr_pdu_ussd_service_op' in pdu_params and pdu_params['dlr_pdu_ussd_service_op'] is not None):
+            args['ussd_service_op'] = pdu_params['dlr_pdu_ussd_service_op']
+        if ('dlr_pdu_its_session_info' in pdu_params and pdu_params['dlr_pdu_its_session_info'] is not None):
+            args['its_session_info'] = pdu_params['dlr_pdu_its_session_info']
+        if ('dlr_pdu_user_message_reference' in pdu_params and pdu_params['dlr_pdu_user_message_reference'] is not None):
+            args['user_message_reference'] = pdu_params['dlr_pdu_user_message_reference']
 
         try:
             # Throw the message to http endpoint
