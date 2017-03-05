@@ -85,10 +85,14 @@ class HttpAPICredentialValidator(AbstractCredentialValidator):
                 and not self.user.mt_credential.getAuthorization('set_validity_period')):
             raise CredentialValidationError(
                 'Authorization failed for user [%s] (Setting validity period not authorized).' % self.user)
-        #if ('ussd-session' in self.request.args
-        #        and not self.user.mt_credential.getAuthorization('set_ussd_session')):
-        #    raise CredentialValidationError(
-        #        'Authorization failed for user [%s] (Setting ussd session not authorized).' % self.user)
+        if ('ussd-op' in self.request.args
+                and not self.user.mt_credential.getAuthorization('set_ussd_op')):
+            raise CredentialValidationError(
+                'Authorization failed for user [%s] (Setting ussd op not authorized).' % self.user)
+        if ('ussd-session' in self.request.args
+                and not self.user.mt_credential.getAuthorization('set_ussd_session')):
+            raise CredentialValidationError(
+                'Authorization failed for user [%s] (Setting ussd session not authorized).' % self.user)
 
     def _checkBalanceAuthorizations(self):
         "Balance Authorizations check"
@@ -123,10 +127,14 @@ class HttpAPICredentialValidator(AbstractCredentialValidator):
                 not self.user.mt_credential.getValueFilter('validity_period').match(str(self.request.args['validity-period'][0]))):
             raise CredentialValidationError(
                 'Value filter failed for user [%s] (validity_period filter mismatch).' % self.user)
-        #if 'ussd-session' in self.request.args and (self.user.mt_credential.getValueFilter('ussd_session') is None or
-        #        not self.user.mt_credential.getValueFilter('ussd_session').match(str(self.request.args['ussd-session'][0]))):
-        #    raise CredentialValidationError(
-        #        'Value filter failed for user [%s] (ussd_session filter mismatch).' % self.user)
+        if 'ussd-op' in self.request.args and (self.user.mt_credential.getValueFilter('ussd_op') is None or
+                not self.user.mt_credential.getValueFilter('ussd_op').match(str(self.request.args['ussd-op'][0]))):
+            raise CredentialValidationError(
+                'Value filter failed for user [%s] (ussd_op filter mismatch).' % self.user)
+        if 'ussd-session' in self.request.args and (self.user.mt_credential.getValueFilter('ussd_session') is None or
+                not self.user.mt_credential.getValueFilter('ussd_session').match(str(self.request.args['ussd-session'][0]))):
+            raise CredentialValidationError(
+                'Value filter failed for user [%s] (ussd_session filter mismatch).' % self.user)
         if (self.user.mt_credential.getValueFilter('content') is None or
                 not self.user.mt_credential.getValueFilter('content').match(str(self.request.args['content'][0]))):
             raise CredentialValidationError(

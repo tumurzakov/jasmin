@@ -13,7 +13,7 @@ from txamqp.queue import Closed
 from jasmin.protocols.smpp.factory import SMPPServerFactory
 from jasmin.protocols.smpp.operations import SMPPOperationFactory
 from jasmin.protocols.smpp.proxies import SMPPServerPBProxy
-from jasmin.vendor.smpp.pdu.constants import data_coding_default_name_map, priority_flag_name_map
+from jasmin.vendor.smpp.pdu.constants import data_coding_default_name_map, priority_flag_name_map, ussd_service_op_value_map
 
 
 class MessageAcknowledgementError(Exception):
@@ -508,7 +508,7 @@ class DLRThrower(Thrower):
         method = message.content.properties['headers']['method']
         level = message.content.properties['headers']['level']
         self.log.debug('Got one message (msgid:%s) to throw', msgid)
-        self.log.info(message.content.properties)
+        self.log.debug(message.content.properties)
 
         # If any, clear requeuing timer
         self.clearRequeueTimer(msgid)
@@ -529,11 +529,11 @@ class DLRThrower(Thrower):
 
         pdu_params = message.content.properties['headers']
         if ('dlr_pdu_ussd_service_op' in pdu_params and pdu_params['dlr_pdu_ussd_service_op'] is not None):
-            args['ussd_service_op'] = pdu_params['dlr_pdu_ussd_service_op']
+            args['ussd_op'] = ussd_service_op_value_map[pdu_params['dlr_pdu_ussd_service_op']]
         if ('dlr_pdu_its_session_info' in pdu_params and pdu_params['dlr_pdu_its_session_info'] is not None):
-            args['its_session_info'] = pdu_params['dlr_pdu_its_session_info']
+            args['ussd_session'] = pdu_params['dlr_pdu_its_session_info']
         if ('dlr_pdu_user_message_reference' in pdu_params and pdu_params['dlr_pdu_user_message_reference'] is not None):
-            args['user_message_reference'] = pdu_params['dlr_pdu_user_message_reference']
+            args['ussd_session'] = pdu_params['dlr_pdu_user_message_reference']
 
         try:
             # Throw the message to http endpoint

@@ -295,7 +295,7 @@ class DLRLookup(object):
         pdu_dlr_dlvrd = message.content.properties['headers']['dlr_dlvrd']
         pdu_dlr_status = message.content.body
 
-        self.log.info(message.content.properties);
+        self.log.debug(message.content.properties);
 
         try:
             if self.redisClient is None:

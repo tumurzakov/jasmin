@@ -11,7 +11,7 @@ from twisted.web.server import NOT_DONE_YET
 
 from jasmin.protocols.smpp.operations import SMPPOperationFactory
 from jasmin.routing.Routables import RoutableSubmitSm
-from jasmin.vendor.smpp.pdu.constants import priority_flag_value_map
+from jasmin.vendor.smpp.pdu.constants import priority_flag_value_map, ussd_service_op_name_map
 from jasmin.vendor.smpp.pdu.pdu_types import RegisteredDeliveryReceipt, RegisteredDelivery
 from .errors import (AuthenticationError, ServerError, RouteNotFoundError, ConnectorNotFoundError,
                      ChargingError, ThroughputExceededError, InterceptorNotSetError,
@@ -204,11 +204,12 @@ class Send(Resource):
                 routable.pdu.params['priority_flag'] = priority_flag_value_map[priority]
             self.log.debug("SubmitSmPDU priority is set to %s", priority)
 
-            if 'ussd-session' in updated_request.args:
-                ussd_session = updated_request.args['ussd-session'][0]
-                routable.pdu.params['user_message_reference'] = int(ussd_session)
-                routable.pdu.params['ussd_service_op'] = 2
-                self.log.debug("SubmitSmPDU ussd_session is set to %s", ussd_session)
+            if 'ussd-op' in updated_request.args and 'ussd-session' in updated_request.args:
+                ussd_op = updated_request.args['ussd-op'][0]
+                routable.pdu.params['ussd_service_op'] = ussd_service_op_name_map[ussd_op]
+                ussd_session = int(updated_request.args['ussd-session'][0])
+                routable.pdu.params['user_message_reference'] = ussd_session
+                self.log.debug("SubmitSmPDU ussd_op = %s ussd_session = %s", ussd_op, ussd_session)
 
             # Set validity_period
             if 'validity-period' in updated_request.args:
@@ -389,7 +390,8 @@ class Send(Resource):
                       # Validity period validation pattern can be validated/filtered further more
                       # through HttpAPICredentialValidator
                       'validity-period' : {'optional': True, 'pattern': re.compile(r'^\d+$')},
-                      'ussd-session' : {'optional': True, 'pattern': re.compile(r'^\d+$')},
+                      'ussd-op'     : {'optional': True, 'pattern': re.compile(r'^([_A-Z])*$')},
+                      'ussd-session': {'optional': True, 'pattern': re.compile(r'^\d+$')},
                       'dlr'         : {'optional': False, 'pattern': re.compile(r'^(yes|no)$')},
                       'dlr-url'     : {'optional': True, 'pattern': re.compile(r'^(http|https)\://.*$')},
                       # DLR Level validation pattern can be validated/filtered further more
@@ -617,7 +619,8 @@ class Rate(Resource):
                       # Validity period validation pattern can be validated/filtered further more
                       # through HttpAPICredentialValidator
                       'validity-period' :{'optional': True, 'pattern': re.compile(r'^\d+$')},
-                      'ussd-session' :{'optional': True, 'pattern': re.compile(r'^\d+$')},
+                      'ussd-op'     : {'optional': True, 'pattern': re.compile(r'^([_A-Z])*$')},
+                      'ussd-session': {'optional': True, 'pattern': re.compile(r'^\d+$')},
                       'tags'        : {'optional': True, 'pattern': re.compile(r'^([-a-zA-Z0-9,])*$')},
                       'content'     : {'optional': True},
                       }

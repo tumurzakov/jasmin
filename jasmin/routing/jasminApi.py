@@ -119,6 +119,7 @@ class MtMessagingCredential(CredentialGeneric):
             'set_source_address': default_authorizations,
             'set_priority': default_authorizations,
             'set_validity_period': default_authorizations,
+            'set_ussd_op': default_authorizations,
             'set_ussd_session': default_authorizations,
         }
 
@@ -127,6 +128,7 @@ class MtMessagingCredential(CredentialGeneric):
             'source_address': re.compile(r'.*'),
             'priority': re.compile(r'^[0-3]$'),
             'validity_period': re.compile(r'^\d+$'),
+            'ussd_op': re.compile(r'^[A-Z_]+$'),
             'ussd_session': re.compile(r'^\d+$'),
             'content': re.compile(r'.*'),
         }

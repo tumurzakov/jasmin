@@ -629,3 +629,15 @@ delivery_failure_reason_name_map = {
     'TEMPORARY_NETWORK_ERROR': 0x03,
 }
 delivery_failure_reason_value_map = dict([(val, key) for (key, val) in delivery_failure_reason_name_map.items()])
+
+ussd_service_op_name_map = {
+    'PSSD_INDICATION': 0x00,
+    'PSSR_INDICATION': 0x01,
+    'USSR_REQUEST': 0x02,
+    'USSN_REQUEST': 0x02,
+    'PSSD_RESPONSE': 0x10,
+    'PSSR_RESPONSE': 0x11,
+    'USSR_CONFIRM': 0x12,
+    'USSN_CONFIRM': 0x13,
+}
+ussd_service_op_value_map = dict([(val, key) for (key, val) in ussd_service_op_name_map.items()])
